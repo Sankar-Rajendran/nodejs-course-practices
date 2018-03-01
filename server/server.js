@@ -1,46 +1,29 @@
-const mongoose = require('mongoose');
+var express = require('express');
+var bodyParser = require('body-parser');
+
+var { mongoose } = require('./db/mongoose');
+var { Todo } = require('./models/todo');
+var { User } = require('./models/user');
 
 
-mongoose.connect('mongodb://localhost:27017/TodoApp');
+
+var app = express();
 
 
-var Todo = mongoose.model('Todos', {
-    text: {
-        type: String,
-        required:true,
-        minlength:1,
-        trim:true
-    },
-    completed: {
-        type: Boolean,
-        default:false
-    },
-    completedAt: {
-        type: Number,
-        default:null
-    }
-});
+app.use(bodyParser.json());
 
+app.post('/todos', (req, res) => {
+    console.log(req.body);
+    var todo = new Todo({ text: req.body.text });
 
-var newTodo = new Todo({
-    text: 'sample test'
-});
-
-
-newTodo.save().then((result) => {
-    console.log('Todos', result);
-}, (e) => {
-    console.log('Not able to add Todo');
+    todo.save().then((doc) => {
+        res.send(doc)
+    },(e)=>{
+        res.status(400).send(e);
+    })
 })
 
 
-var newTodo = new Todo({
-    error:false
-});
-
-//Throws error - since required field not there in object
-newTodo.save().then((result) => {
-    console.log('Todos', result);
-}, (e) => {
-    console.log('Not able to add Todo');
+app.listen(3000, () => {
+    console.log('Server starts listening on port 3000');
 })
