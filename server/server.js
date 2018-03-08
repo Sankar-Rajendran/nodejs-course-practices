@@ -41,8 +41,8 @@ app.get('/todos/:id', (req, res) => {
     }
 
     Todo.findById(id).then((todo) => {
-        if(!todo){
-            return res.status(404).send({message:"No Data found"});
+        if (!todo) {
+            return res.status(404).send({ message: "No Data found" });
         }
         res.status(200).send({ todo: todo })
     }).catch((err) => {
@@ -50,6 +50,24 @@ app.get('/todos/:id', (req, res) => {
     })
 })
 
+
+
+
+app.delete('/todos/:id', (req, res) => {
+    var id = req.params.id;
+    if (!ObjectId.isValid(id)) {
+        return res.status(404).send({ error: true, message: 'invlid Id' });
+    }
+
+    Todo.findByIdAndRemove(id).then((todo) => {
+        if (!todo) {
+            return res.status(404).send({ message: 'No doc found' })
+        }
+        res.status(200).send({ todo: todo })
+    }).catch((e) => {
+        res.status(400).send(e);
+    })
+})
 
 app.listen(port, () => {
     console.log('Server starts listening on port' + port);
