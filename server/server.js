@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const config = require('./config/config.js');
 const express = require('express');
 const bodyParser = require('body-parser');
 const { ObjectId } = require('mongodb');
@@ -25,7 +26,6 @@ var validateObjectId = function (id) {
 app.use(bodyParser.json());
 
 app.post('/todos', (req, res) => {
-    console.log(req.body);
     var todo = new Todo({ text: req.body.text });
 
     todo.save().then((doc) => {
@@ -107,6 +107,25 @@ app.patch('/todos/:id', (req, res) => {
         return res.status(400).send({ error: true, msg: 'Error updating the id' });
     });
 })
+
+
+
+
+//User Routes
+app.post('/users', (req, res) => {
+    var userProps = _.pick(req.body, ['email', 'password'])
+    var user = new User(userProps);
+    user.save().then(() => {
+        return user.generateAuthToken();        
+    }).then((token) => {
+        res.header('x-auth',token).send(user);
+    }).catch((e) => {
+        res.status(400).send(e);
+    })
+})
+
+
+
 
 app.listen(port, () => {
     console.log('Server starts listening on port' + port);
