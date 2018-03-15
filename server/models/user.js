@@ -66,7 +66,7 @@ userSchema.methods.generateAuthToken = function () {
     var user = this;
     var access = 'auth';
     var token = jwt.sign({ _id: user._id.toHexString(), access }, 'abc123').toString();
-    user.tokens = [{ access, token }];
+    user.tokens = [{ access: access, token }];
     return user.save().then(() => {
         return token;
     })
@@ -74,8 +74,17 @@ userSchema.methods.generateAuthToken = function () {
 }
 
 
-
-
+userSchema.methods.removeToken = function (token) {
+    var user = this;
+    return user.update({
+        //Will remove the entire object , not just the token
+        $pull: {
+            tokens: {
+                token: token
+            }
+        }
+    });
+}
 
 //Model method - called with model
 userSchema.statics.findByToken = function (token) {
