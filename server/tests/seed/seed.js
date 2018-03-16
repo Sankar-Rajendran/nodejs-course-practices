@@ -5,8 +5,8 @@ const { Todo } = require('./../../models/todo');
 const { User } = require('./../../models/user');
 
 
-const userOneId = new ObjectId();
-const userTwoId = new ObjectId();
+const userOneId = new ObjectId(1);
+const userTwoId = new ObjectId(2);
 
 
 const users = [{
@@ -21,7 +21,11 @@ const users = [{
 }, {
     _id: userTwoId,
     email: 'sankar123@example.com',
-    password: 'userOnePass'
+    password: 'userOnePass',
+    tokens: [{
+        access: 'auth',
+        token: jwt.sign({ _id: userTwoId, access: 'auth' }, 'abc123').toString()
+    }]
 }];
 
 
@@ -29,21 +33,26 @@ const populateUsers = (done) => {
     User.remove({}).then(() => {
         //Why we are not using insertmany is  to hash the password before save
         var userOne = new User(users[0]).save();
-        var userTwo = new User(users[1]).save();
 
-        return Promise.all([userOne, userTwo]).then(() => done());
+        return userOne.then(() => {
+            var userTwo = new User(users[1]).save().then(() => {
+                done();
+            });
+        })
     })
 }
 
 
 const todos = [{
     _id: new ObjectId(),
-    text: 'First test todo'
+    text: 'First test todo',
+    _creator: userOneId
 }, {
     _id: new ObjectId(),
     text: 'Second test todo',
     completed: true,
-    complatedAt: 333
+    complatedAt: 333,
+    _creator: userTwoId
 }];
 
 const populateTodos = (done) => {
